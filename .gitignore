@@ -36,3 +36,9 @@ yarn-error.log
 # 构建
 release/app/dist
 release/build
+
+# Web build output
+web/dist
+server/dist
+
+# Build state
