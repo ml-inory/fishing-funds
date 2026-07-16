@@ -2,7 +2,7 @@
 
 const STORAGE_PREFIX = 'ff_web_';
 const SEED_VERSION_KEY = `${STORAGE_PREFIX}seed_version`;
-const CURRENT_SEED_VERSION = 2; // bump to re-seed
+const CURRENT_SEED_VERSION = 2;
 
 async function request(url: string, config: any = {}) {
   const { responseType = 'json', headers: reqHeaders, searchParams, method = 'GET', body: reqBody } = config;
@@ -23,11 +23,7 @@ function seedSampleData() {
   const seedVersion = Number(localStorage.getItem(SEED_VERSION_KEY) || 0);
   if (seedVersion >= CURRENT_SEED_VERSION) return;
 
-  const walletKey = `${STORAGE_PREFIX}config_WALLET_SETTING`;
-  const systemKey = `${STORAGE_PREFIX}config_SYSTEM_SETTING`;
-
-  // Wallet
-  localStorage.setItem(walletKey, JSON.stringify([{
+  localStorage.setItem(`${STORAGE_PREFIX}config_WALLET_SETTING`, JSON.stringify([{
     name: '示例钱包', iconIndex: 0, code: '-1',
     funds: [
       { code: '320007', name: '诺安成长混合A', cyfe: 1000, cbj: 1.6988 },
@@ -41,32 +37,18 @@ function seedSampleData() {
   }]));
   localStorage.setItem(`${STORAGE_PREFIX}config_CURRENT_WALLET_CODE`, JSON.stringify('-1'));
 
-  // System setting (14px font for web)
-  localStorage.setItem(systemKey, JSON.stringify({
-    baseFontSizeSetting: 14,
-    systemThemeSetting: 0,
-    lowKeySetting: false,
-    lowKeyDegreeSetting: 0,
-    primaryColor: '#1677ff',
-    autoRefreshSetting: 10,
-    autoFreshSetting: 10,
-    adjustmentNotificationSetting: false,
-    adjustmentNotificationDateSetting: '',
-    syncConfigPathSetting: '',
-    syncConfigEnableSetting: false,
-    fundApiTypeSetting: 0,
-    conciseSetting: false,
+  localStorage.setItem(`${STORAGE_PREFIX}config_SYSTEM_SETTING`, JSON.stringify({
+    baseFontSizeSetting: 14, systemThemeSetting: 0, lowKeySetting: false, lowKeyDegreeSetting: 0,
+    primaryColor: '#1677ff', autoRefreshSetting: 10, autoFreshSetting: 10,
+    adjustmentNotificationSetting: false, adjustmentNotificationDateSetting: '',
+    syncConfigPathSetting: '', syncConfigEnableSetting: false, fundApiTypeSetting: 0, conciseSetting: false,
   }));
 
-  // Zindex
   localStorage.setItem(`${STORAGE_PREFIX}config_ZINDEX_SETTING`, JSON.stringify([
-    { code: '1.000001', name: '上证指数' },
-    { code: '0.399001', name: '深证成指' },
-    { code: '0.399006', name: '创业板指' },
-    { code: '1.000688', name: '科创50' },
+    { code: '1.000001', name: '上证指数' }, { code: '0.399001', name: '深证成指' },
+    { code: '0.399006', name: '创业板指' }, { code: '1.000688', name: '科创50' },
   ]));
 
-  // Coin
   localStorage.setItem(`${STORAGE_PREFIX}config_COIN_SETTING`, JSON.stringify([
     { code: 'bitcoin', name: 'Bitcoin', symbol: 'btc' },
     { code: 'ethereum', name: 'Ethereum', symbol: 'eth' },
@@ -114,6 +96,8 @@ const electronStore = {
   },
 };
 
+const FAKE_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
+
 window.contextModules = {
   request,
   process: { production: import.meta.env.PROD, platform: 'browser', electron: '', node: '', v8: '', chrome: '', arch: '', buildDate: String(__BUILD_DATE__), sandboxed: false } as any,
@@ -123,13 +107,14 @@ window.contextModules = {
       invoke: async (channel: string, ...args: any[]) => {
         switch (channel) {
           case 'is-support-blur-bg': return false;
-          case 'get-version': return '1.0.0-web';
+          case 'get-version': case 'get-app-version': return '1.0.0-web';
+          case 'get-fakeUA': return FAKE_UA;
           case 'show-message-box': return { response: 0 };
           case 'show-save-dialog': case 'show-open-dialog': return { canceled: true };
           case 'clipboard-writeText': await navigator.clipboard.writeText(args[0]); return;
           case 'clipboard-readText': return await navigator.clipboard.readText();
           case 'set-native-theme-source': case 'set-menubar-visible': case 'set-tray-content': return;
-          default: return undefined;
+          default: console.debug('IPC:', channel); return undefined;
         }
       },
       removeAllListeners: () => {}, removeListener: () => {}, on: () => {},
