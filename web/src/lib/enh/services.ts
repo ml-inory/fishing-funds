@@ -1,4 +1,4 @@
-// Web service layer - replaces @lib/enh/services
+// Web service layer
 
 const API = '/api';
 
@@ -8,29 +8,19 @@ async function apiGet<T>(path: string): Promise<T> {
   return res.json();
 }
 
-async function apiPost<T>(path: string, body: unknown): Promise<T> {
-  const res = await fetch(`${API}${path}`, {
-    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
-  });
-  if (!res.ok) throw new Error(`API error: ${res.status}`);
-  return res.json();
-}
-
-// Eastmoney returns prices * 100, divide to get actual price
 function px(v: number): number { return v / 100; }
 function pct(v: number): number { return v / 100; }
 
 export const Fund = {
   async FromEastmoney(code: string): Promise<any> {
     const data = await apiGet(`/fund/${code}`);
-    return data ? {
-      fundcode: data.fundcode, name: data.name, jzrq: data.jzrq,
-      dwjz: data.dwjz, gsz: data.gsz, gszzl: data.gszzl, gztime: data.gztime,
-    } : null;
+    return data ? { fundcode: data.fundcode, name: data.name, jzrq: data.jzrq, dwjz: data.dwjz, gsz: data.gsz, gszzl: data.gszzl, gztime: data.gztime } : null;
   },
-  async GetFixFromEastMoney(fundcode: string): Promise<any> { return Fund.FromEastmoney(fundcode); },
+  async GetFixFromEastMoney(code: string): Promise<any> { return Fund.FromEastmoney(code); },
   async GetFundInfoByNameFromEaseMoney(_n: string): Promise<any> { return null; },
-  async GetRemoteFundsFromEastmoney(): Promise<any> { return []; },
+  async GetRemoteFundsFromEastmoney(): Promise<any> {
+    try { return await apiGet('/funds/search') || []; } catch { return []; }
+  },
   async GetFundRatingFromEasemoney(): Promise<any> { return []; },
   async FromTencent(code: string): Promise<any> { return Fund.FromEastmoney(code); },
 };
@@ -67,19 +57,16 @@ export const Coin = {
     const data = await apiGet(`/coin/detail/${code}`);
     return data ? { id: data.id, symbol: data.symbol, name: data.name, image: data.image, market_data: data.market_data, market_cap_rank: data.market_cap_rank, coingecko_score: data.coingecko_score } : null;
   },
-  async GetRemoteCoinsFromCoingecko(): Promise<any> { return []; },
+  async GetRemoteCoinsFromCoingecko(): Promise<any> {
+    try { return await apiGet('/coins/list/top') || []; } catch { return []; }
+  },
 };
 
 export const Zindex = {
   async FromEastmoney(code: string): Promise<any> {
     const data = await apiGet(`/zindex/${code}`);
     if (!data) return null;
-    return {
-      code, name: data.f58 || data.f57 || '',
-      zx: px(data.f43), zs: px(data.f60), zdf: pct(data.f170), zde: px(data.f169),
-      zgj: px(data.f44), zdj: px(data.f45), kpj: px(data.f46),
-      cjl: data.f47, cje: data.f48, zsz: data.f116,
-    };
+    return { code, name: data.f58 || data.f57 || '', zx: px(data.f43), zs: px(data.f60), zdf: pct(data.f170), zde: px(data.f169), zgj: px(data.f44), zdj: px(data.f45), kpj: px(data.f46), cjl: data.f47, cje: data.f48, zsz: data.f116 };
   },
 };
 
