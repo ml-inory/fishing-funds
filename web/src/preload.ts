@@ -2,6 +2,7 @@
 // Provides the same `window.contextModules` API using browser-native equivalents
 
 const API_BASE = '/api';
+const STORAGE_PREFIX = 'ff_web_';
 
 // Simple fetch-based request replacement
 async function request(url: string, config: any = {}) {
@@ -32,25 +33,47 @@ async function request(url: string, config: any = {}) {
   }
 }
 
+// Seed sample data on first visit
+function seedSampleData() {
+  const key = `${STORAGE_PREFIX}config_WALLET_SETTING`;
+  if (!localStorage.getItem(key)) {
+    const sampleWallet: Wallet.SettingItem = {
+      name: '示例钱包',
+      iconIndex: 0,
+      code: '-1',
+      funds: [
+        { code: '320007', name: '诺安成长混合A', cyfe: 1000, cbj: 1.6988 },
+        { code: '161725', name: '招商中证白酒指数(LOF)A', cyfe: 1000, cbj: 1.4896 },
+        { code: '005827', name: '易方达蓝筹精选混合', cyfe: 500, cbj: 2.3500 },
+      ],
+      stocks: [
+        { secid: '1.600519', name: '贵州茅台', code: '600519', market: 1, cyfe: 100, cbj: 1800, type: 1 },
+        { secid: '0.000858', name: '五粮液', code: '000858', market: 0, cyfe: 200, cbj: 150, type: 1 },
+      ],
+    };
+    localStorage.setItem(key, JSON.stringify([sampleWallet]));
+    localStorage.setItem(`${STORAGE_PREFIX}config_CURRENT_WALLET_CODE`, JSON.stringify('-1'));
+  }
+}
+seedSampleData();
+
 // localStorage-based store replacement
-const storagePrefix = 'ff_web_';
 const electronStore = {
   async get(type: string, key: string, init: unknown) {
-    const raw = localStorage.getItem(`${storagePrefix}${type}_${key}`);
+    const raw = localStorage.getItem(`${STORAGE_PREFIX}${type}_${key}`);
     if (raw !== null) {
       try { return JSON.parse(raw); } catch { return raw; }
     }
     return init;
   },
   async set(type: string, key: string, value: unknown) {
-    localStorage.setItem(`${storagePrefix}${type}_${key}`, JSON.stringify(value));
+    localStorage.setItem(`${STORAGE_PREFIX}${type}_${key}`, JSON.stringify(value));
   },
   async delete(type: string, key: string) {
-    localStorage.removeItem(`${storagePrefix}${type}_${key}`);
+    localStorage.removeItem(`${STORAGE_PREFIX}${type}_${key}`);
   },
   async cover(type: string, value: unknown) {
-    // Delete all keys for this type, then set
-    const prefix = `${storagePrefix}${type}_`;
+    const prefix = `${STORAGE_PREFIX}${type}_`;
     for (let i = localStorage.length - 1; i >= 0; i--) {
       const k = localStorage.key(i);
       if (k?.startsWith(prefix)) localStorage.removeItem(k);
@@ -63,7 +86,7 @@ const electronStore = {
   },
   async all(type: string) {
     const result: Record<string, unknown> = {};
-    const prefix = `${storagePrefix}${type}_`;
+    const prefix = `${STORAGE_PREFIX}${type}_`;
     for (let i = 0; i < localStorage.length; i++) {
       const k = localStorage.key(i);
       if (k?.startsWith(prefix)) {
@@ -94,7 +117,6 @@ window.contextModules = {
     } as any,
     ipcRenderer: {
       invoke: async (channel: string, ...args: any[]) => {
-        // Handle common IPC channels
         switch (channel) {
           case 'is-support-blur-bg':
             return false;
@@ -111,13 +133,11 @@ window.contextModules = {
           case 'clipboard-readText':
             return await navigator.clipboard.readText();
           case 'set-native-theme-source':
-            return;
           case 'set-menubar-visible':
-            return;
           case 'set-tray-content':
             return;
           default:
-            console.warn(`IPC invoke not implemented for: ${channel}`);
+            console.warn(`IPC not implemented: ${channel}`);
             return undefined;
         }
       },
