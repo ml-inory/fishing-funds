@@ -9,6 +9,7 @@ export default defineConfig({
       '@': path.resolve(__dirname, '../src/renderer'),
       '@lib': path.resolve(__dirname, 'src/lib'),
       '@/app': path.resolve(__dirname, 'src/App.tsx'),
+      '@/utils/enhancement': path.resolve(__dirname, 'src/enhancement.ts'),
       'electron-log/renderer': path.resolve(__dirname, 'src/stubs/electron-log.ts'),
       '@nivalis/string-similarity': path.resolve(__dirname, 'src/stubs/@nivalis/string-similarity.ts'),
     },
