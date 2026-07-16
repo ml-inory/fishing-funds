@@ -113,7 +113,18 @@ window.contextModules = {
           case 'show-save-dialog': case 'show-open-dialog': return { canceled: true };
           case 'clipboard-writeText': await navigator.clipboard.writeText(args[0]); return;
           case 'clipboard-readText': return await navigator.clipboard.readText();
-          case 'set-native-theme-source': case 'set-menubar-visible': case 'set-tray-content': return;
+          case 'set-native-theme-source':
+            if (args[0] === 0) {
+              document.documentElement.setAttribute('data-theme', 'auto');
+            } else if (args[0] === 1) {
+              document.documentElement.setAttribute('data-theme', 'light');
+            } else if (args[0] === 2) {
+              document.documentElement.setAttribute('data-theme', 'dark');
+            }
+            return;
+          case 'get-should-use-dark-colors':
+            return window.matchMedia('(prefers-color-scheme: dark)').matches;
+          case 'set-menubar-visible': case 'set-tray-content': return;
           default: console.debug('IPC:', channel); return undefined;
         }
       },
