@@ -1,6 +1,9 @@
 // Web entry point - adapted from src/renderer/index.tsx
 // Removes Electron-specific startup code
 
+// Initialize the web preload bridge FIRST (before any renderer imports)
+import './preload';
+
 import { createRoot } from 'react-dom/client';
 import { IconContext } from 'react-icons';
 import { ConfigProvider } from 'antd';
@@ -27,8 +30,8 @@ import store from '@/store';
 import App from '@/app';
 import 'dayjs/locale/zh-cn';
 
-// Initialize the web preload bridge FIRST
-import './preload';
+// Window globals for JSONP callbacks
+import '@/utils/window';
 
 // dayjs
 dayjs.extend(isSameOrBefore);

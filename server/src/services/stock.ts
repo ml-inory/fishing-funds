@@ -1,40 +1,44 @@
+import { request, ProxyAgent } from 'undici';
+
 const STOCK_API = 'https://push2.eastmoney.com/api/qt/stock/get';
+const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36';
 
 export interface StockResponse {
-  f43: number;  // 最新价
-  f44: number;  // 最高价
-  f45: number;  // 最低价
-  f46: number;  // 开盘价
-  f47: number;  // 成交量
-  f48: number;  // 成交额
-  f50: number;  // 量比
-  f57: string;  // 名称
-  f58: string;  // 代码
-  f60: number;  // 昨收
-  f116: number; // 总市值
-  f117: number; // 流通市值
-  f162: number; // 市盈率
-  f167: number; // 市净率
-  f169: number; // 涨跌额
-  f170: number; // 涨跌幅
-  f171: number; // 换手率
+  f43: number; f44: number; f45: number; f46: number; f47: number; f48: number;
+  f50: number; f57: string; f58: string; f60: number; f116: number; f117: number;
+  f162: number; f167: number; f169: number; f170: number; f171: number;
 }
 
 interface EastmoneyStockResponse {
   data?: StockResponse;
 }
 
+function getDispatcher() {
+  const proxyUrl = process.env.https_proxy || process.env.HTTPS_PROXY || process.env.http_proxy || process.env.HTTP_PROXY;
+  if (proxyUrl) {
+    try { return new ProxyAgent(proxyUrl); } catch {}
+  }
+  return undefined;
+}
+
+async function fetchJson(url: string): Promise<any> {
+  const dispatcher = getDispatcher();
+  const res = await request(url, {
+    headers: {
+      'User-Agent': UA,
+      Referer: 'https://quote.eastmoney.com/',
+    },
+    dispatcher,
+    headersTimeout: 15000,
+    bodyTimeout: 15000,
+  });
+  return res.body.json();
+}
+
 export async function getStock(secid: string): Promise<StockResponse | null> {
   try {
     const fields = 'f43,f44,f45,f46,f47,f48,f50,f57,f58,f60,f116,f117,f162,f167,f169,f170,f171';
-    const url = `${STOCK_API}?secid=${secid}&fields=${fields}`;
-    const res = await fetch(url, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-        Referer: 'https://quote.eastmoney.com/',
-      },
-    });
-    const json: EastmoneyStockResponse = await res.json();
+    const json: EastmoneyStockResponse = await fetchJson(`${STOCK_API}?secid=${secid}&fields=${fields}`);
     return json.data || null;
   } catch {
     return null;
@@ -45,6 +49,5 @@ export async function getStocks(secids: string[]): Promise<(StockResponse | null
   return Promise.all(secids.map(getStock));
 }
 
-// Index uses same API as stock
 export const getZindex = getStock;
 export const getZindexs = getStocks;
