@@ -1,0 +1,46 @@
+{
+  "goal": "将 Electron 桌面应用 Fishing Funds 转换为前后端分离的 Web 应用，可通过浏览器访问",
+  "stack": "TypeScript + React + Vite (前端) + Express (后端)",
+  "base_branch": "main",
+  "branch": "feat/build-20260717-0001",
+  "iteration": 1,
+  "validation_command": "cd server && npx tsc --noEmit && cd ../web && npx tsc --noEmit && npx vite build",
+  "requirement_alignment": {
+    "resolved": [
+      "保留全部原有功能（基金、股票、虚拟货币、AI识别、导入导出等）",
+      "前后端分离：Vite SPA 前端 + Express TypeScript 后端",
+      "复用 src/main/httpClient.ts 请求逻辑",
+      "后端代理 + 自定义 UA 解决数据源 CORS/封禁",
+      "去掉 Electron 特有功能（系统托盘、TouchBar、全局快捷键、自动更新），页面内替代",
+      "第一轮：搭建 Express 后端 + Vite 前端骨架，实现数据 API 代理（基金/股票/虚拟货币），前端可展示首页"
+    ],
+    "open_questions": [],
+    "acceptance_checks": [
+      "Express 后端能启动并代理基金/股票/虚拟货币数据请求",
+      "Vite 前端能构建成功并展示首页数据",
+      "前后端分离，前端通过 /api/* 调用后端"
+    ],
+    "first_iteration_scope": "搭建 Express 后端骨架（TypeScript）+ Vite 前端骨架，实现核心数据 API 代理（基金/股票/虚拟货币），前端首页展示数据"
+  },
+  "issues": [
+    {
+      "number": "local-001",
+      "title": "feat[1]: 搭建前后端骨架，实现核心数据API代理",
+      "acceptance_checks": [
+        "Express 后端能启动，提供 /api/fund, /api/stock, /api/coin 等代理接口",
+        "后端复用 src/main/httpClient.ts 请求逻辑，支持自定义 UA",
+        "Vite 前端能构建成功，dev server 正常运行",
+        "前端首页通过后端 API 获取并展示基金数据",
+        "前后端分离，前端请求走 /api/* 到后端"
+      ],
+      "file": ".build-issues/001-scaffold-api-proxy.md"
+    }
+  ],
+  "rounds": [],
+  "pre_existing_changes": [],
+  "assumptions": [
+    "数据源仍可用（天天基金、新浪等）",
+    "Node.js >= 22.8 可用",
+    "后端端口默认 3001，前端 dev server 默认 3456"
+  ]
+}
