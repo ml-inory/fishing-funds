@@ -36,24 +36,20 @@ function seedSampleData() {
     ],
   }]));
   localStorage.setItem(`${STORAGE_PREFIX}config_CURRENT_WALLET_CODE`, JSON.stringify('-1'));
-
   localStorage.setItem(`${STORAGE_PREFIX}config_SYSTEM_SETTING`, JSON.stringify({
     baseFontSizeSetting: 14, systemThemeSetting: 0, lowKeySetting: false, lowKeyDegreeSetting: 0,
     primaryColor: '#1677ff', autoRefreshSetting: 10, autoFreshSetting: 10,
     adjustmentNotificationSetting: false, adjustmentNotificationDateSetting: '',
     syncConfigPathSetting: '', syncConfigEnableSetting: false, fundApiTypeSetting: 0, conciseSetting: false,
   }));
-
   localStorage.setItem(`${STORAGE_PREFIX}config_ZINDEX_SETTING`, JSON.stringify([
     { code: '1.000001', name: '上证指数' }, { code: '0.399001', name: '深证成指' },
     { code: '0.399006', name: '创业板指' }, { code: '1.000688', name: '科创50' },
   ]));
-
   localStorage.setItem(`${STORAGE_PREFIX}config_COIN_SETTING`, JSON.stringify([
     { code: 'bitcoin', name: 'Bitcoin', symbol: 'btc' },
     { code: 'ethereum', name: 'Ethereum', symbol: 'eth' },
   ]));
-
   localStorage.setItem(SEED_VERSION_KEY, String(CURRENT_SEED_VERSION));
 }
 seedSampleData();
@@ -98,6 +94,9 @@ const electronStore = {
 
 const FAKE_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
 
+// Silent fallback for unimplemented IPC
+const IPC_NOOP = async () => undefined;
+
 window.contextModules = {
   request,
   process: { production: import.meta.env.PROD, platform: 'browser', electron: '', node: '', v8: '', chrome: '', arch: '', buildDate: String(__BUILD_DATE__), sandboxed: false } as any,
@@ -113,19 +112,15 @@ window.contextModules = {
           case 'show-save-dialog': case 'show-open-dialog': return { canceled: true };
           case 'clipboard-writeText': await navigator.clipboard.writeText(args[0]); return;
           case 'clipboard-readText': return await navigator.clipboard.readText();
-          case 'set-native-theme-source':
-            if (args[0] === 0) {
-              document.documentElement.setAttribute('data-theme', 'auto');
-            } else if (args[0] === 1) {
-              document.documentElement.setAttribute('data-theme', 'light');
-            } else if (args[0] === 2) {
-              document.documentElement.setAttribute('data-theme', 'dark');
-            }
-            return;
           case 'get-should-use-dark-colors':
             return window.matchMedia('(prefers-color-scheme: dark)').matches;
+          case 'set-native-theme-source':
+            if (args[0] === 1) document.documentElement.setAttribute('data-theme', 'light');
+            else if (args[0] === 2) document.documentElement.setAttribute('data-theme', 'dark');
+            else document.documentElement.removeAttribute('data-theme');
+            return;
           case 'set-menubar-visible': case 'set-tray-content': return;
-          default: console.debug('IPC:', channel); return undefined;
+          default: return undefined; // silent no-op
         }
       },
       removeAllListeners: () => {}, removeListener: () => {}, on: () => {},
