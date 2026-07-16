@@ -23,6 +23,8 @@ export const Fund = {
   },
   async GetFundRatingFromEasemoney(): Promise<any> { return []; },
   async FromTencent(code: string): Promise<any> { return Fund.FromEastmoney(code); },
+  async GetFundDetailFromEastmoney(_code: string): Promise<any> { return {}; },
+  async GetIndustryRateFromEaseMoney(_code: string): Promise<any> { return {}; },
 };
 
 export const Stock = {
