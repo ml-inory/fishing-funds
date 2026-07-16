@@ -1,9 +1,12 @@
 import express from 'express';
 import cors from 'cors';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import * as fundService from './services/fund.js';
 import * as stockService from './services/stock.js';
 import * as coinService from './services/coin.js';
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const PORT = process.env.PORT || 3001;
 
@@ -12,90 +15,54 @@ app.use(express.json());
 
 // Fund APIs
 app.get('/api/fund/:code', async (req, res) => {
-  const { code } = req.params;
-  const data = await fundService.getFund(code);
-  if (data) {
-    res.json(data);
-  } else {
-    res.status(502).json({ error: 'Failed to fetch fund data' });
-  }
+  const data = await fundService.getFund(req.params.code);
+  data ? res.json(data) : res.status(502).json({ error: 'Failed to fetch fund data' });
 });
-
 app.post('/api/funds', async (req, res) => {
-  const { codes } = req.body;
-  if (!Array.isArray(codes)) {
-    return res.status(400).json({ error: 'codes must be an array' });
-  }
-  const data = await fundService.getFunds(codes);
-  res.json(data);
+  if (!Array.isArray(req.body.codes)) return res.status(400).json({ error: 'codes must be an array' });
+  res.json(await fundService.getFunds(req.body.codes));
 });
 
 // Stock APIs
 app.get('/api/stock/:secid', async (req, res) => {
-  const { secid } = req.params;
-  const data = await stockService.getStock(secid);
-  if (data) {
-    res.json(data);
-  } else {
-    res.status(502).json({ error: 'Failed to fetch stock data' });
-  }
+  const data = await stockService.getStock(req.params.secid);
+  data ? res.json(data) : res.status(502).json({ error: 'Failed to fetch stock data' });
 });
-
 app.post('/api/stocks', async (req, res) => {
-  const { secids } = req.body;
-  if (!Array.isArray(secids)) {
-    return res.status(400).json({ error: 'secids must be an array' });
-  }
-  const data = await stockService.getStocks(secids);
-  res.json(data.filter(Boolean));
+  if (!Array.isArray(req.body.secids)) return res.status(400).json({ error: 'secids must be an array' });
+  res.json((await stockService.getStocks(req.body.secids)).filter(Boolean));
 });
 
-// Index (zindex) APIs (same as stock)
+// Zindex APIs
 app.get('/api/zindex/:secid', async (req, res) => {
-  const { secid } = req.params;
-  const data = await stockService.getZindex(secid);
-  if (data) {
-    res.json(data);
-  } else {
-    res.status(502).json({ error: 'Failed to fetch index data' });
-  }
+  const data = await stockService.getZindex(req.params.secid);
+  data ? res.json(data) : res.status(502).json({ error: 'Failed to fetch index data' });
 });
-
 app.post('/api/zindexs', async (req, res) => {
-  const { secids } = req.body;
-  if (!Array.isArray(secids)) {
-    return res.status(400).json({ error: 'secids must be an array' });
-  }
-  const data = await stockService.getZindexs(secids);
-  res.json(data.filter(Boolean));
+  if (!Array.isArray(req.body.secids)) return res.status(400).json({ error: 'secids must be an array' });
+  res.json((await stockService.getZindexs(req.body.secids)).filter(Boolean));
 });
 
 // Coin APIs
 app.get('/api/coins/:ids', async (req, res) => {
-  const { ids } = req.params;
-  const data = await coinService.getCoins(ids);
-  if (data) {
-    res.json(data);
-  } else {
-    res.status(502).json({ error: 'Failed to fetch coin data' });
-  }
+  const data = await coinService.getCoins(req.params.ids);
+  data ? res.json(data) : res.status(502).json({ error: 'Failed to fetch coin data' });
 });
-
 app.get('/api/coin/detail/:id', async (req, res) => {
-  const { id } = req.params;
-  const data = await coinService.getCoinDetail(id);
-  if (data) {
-    res.json(data);
-  } else {
-    res.status(502).json({ error: 'Failed to fetch coin detail' });
-  }
+  const data = await coinService.getCoinDetail(req.params.id);
+  data ? res.json(data) : res.status(502).json({ error: 'Failed to fetch coin detail' });
 });
 
 // Health check
-app.get('/api/health', (_req, res) => {
-  res.json({ status: 'ok', timestamp: Date.now() });
+app.get('/api/health', (_req, res) => res.json({ status: 'ok', timestamp: Date.now() }));
+
+// Serve static frontend in production
+const staticDir = path.resolve(__dirname, '../../web/dist');
+app.use(express.static(staticDir));
+app.get('*', (_req, res) => {
+  res.sendFile(path.join(staticDir, 'index.html'));
 });
 
 app.listen(PORT, () => {
-  console.log(`Fishing Funds API server running on http://localhost:${PORT}`);
+  console.log(`Fishing Funds Web running on http://localhost:${PORT}`);
 });
