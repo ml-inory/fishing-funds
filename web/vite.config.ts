@@ -8,6 +8,7 @@ export default defineConfig({
     alias: {
       '@': path.resolve(__dirname, '../src/renderer'),
       '@lib': path.resolve(__dirname, 'src/lib'),
+      '@/app': path.resolve(__dirname, 'src/App.tsx'),
       'electron-log/renderer': path.resolve(__dirname, 'src/stubs/electron-log.ts'),
       '@nivalis/string-similarity': path.resolve(__dirname, 'src/stubs/@nivalis/string-similarity.ts'),
     },
@@ -29,9 +30,7 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks(id) {
-          if (id.includes('node_modules')) {
-            return 'vendor';
-          }
+          if (id.includes('node_modules')) return 'vendor';
           return null;
         },
       },
