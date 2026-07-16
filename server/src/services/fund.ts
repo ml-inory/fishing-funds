@@ -40,3 +40,18 @@ export async function getFunds(codes: string[]): Promise<FundResponse[]> {
   const results = await Promise.all(codes.map(getFund));
   return results.filter((f): f is FundResponse => f !== null);
 }
+
+export async function getFundList(): Promise<any[] | null> {
+  try {
+    const url = 'https://fund.eastmoney.com/js/fundcode_search.js';
+    const res = await fetch(url, {
+      headers: { 'User-Agent': UA, Referer: 'https://fund.eastmoney.com/' },
+    });
+    const text = await res.text();
+    const jsonStr = text.replace(/^var\s+r\s*=\s*/, '').replace(/;?\s*$/, '');
+    return JSON.parse(jsonStr);
+  } catch (e) {
+    console.error('[fund] getFundList error:', String(e));
+    return null;
+  }
+}

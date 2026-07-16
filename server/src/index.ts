@@ -23,6 +23,12 @@ app.post('/api/funds', async (req, res) => {
   res.json(await fundService.getFunds(req.body.codes));
 });
 
+// Fund search - fetch remote fund list from Eastmoney
+app.get('/api/funds/search', async (_req, res) => {
+  const data = await fundService.getFundList();
+  data ? res.json(data) : res.status(502).json({ error: 'Failed to fetch fund list' });
+});
+
 // Stock APIs
 app.get('/api/stock/:secid', async (req, res) => {
   const data = await stockService.getStock(req.params.secid);
@@ -53,6 +59,12 @@ app.get('/api/coin/detail/:id', async (req, res) => {
   data ? res.json(data) : res.status(502).json({ error: 'Failed to fetch coin detail' });
 });
 
+// Coin list - top coins from Coingecko
+app.get('/api/coins/list/top', async (_req, res) => {
+  const data = await coinService.getTopCoins();
+  data ? res.json(data) : res.status(502).json({ error: 'Failed to fetch coin list' });
+});
+
 // Health check
 app.get('/api/health', (_req, res) => res.json({ status: 'ok', timestamp: Date.now() }));
 
@@ -64,5 +76,5 @@ app.get('*', (_req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Fishing Funds Web running on http://localhost:${PORT}`);
+  console.log(`Fishing Funds Web on http://localhost:${PORT}`);
 });
