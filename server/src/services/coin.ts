@@ -1,4 +1,7 @@
+import { request, ProxyAgent } from 'undici';
+
 const COINGECKO_API = 'https://api.coingecko.com/api/v3';
+const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36';
 
 export interface CoinSimpleItem {
   [currency: string]: number;
@@ -18,8 +21,6 @@ export interface CoinDetailResponse {
     market_cap: Record<string, number>;
     total_volume: Record<string, number>;
     price_change_percentage_24h: number;
-    price_change_percentage_7d?: number;
-    price_change_percentage_30d?: number;
     circulating_supply: number;
     total_supply: number | null;
     max_supply: number | null;
@@ -31,16 +32,36 @@ export interface CoinDetailResponse {
   coingecko_score: number;
 }
 
+function getDispatcher() {
+  const proxyUrl = process.env.https_proxy || process.env.HTTPS_PROXY || process.env.http_proxy || process.env.HTTP_PROXY;
+  if (proxyUrl) {
+    try {
+      return new ProxyAgent(proxyUrl);
+    } catch {}
+  }
+  return undefined;
+}
+
+async function fetchJson(url: string): Promise<any> {
+  const dispatcher = getDispatcher();
+  const res = await request(url, {
+    headers: {
+      'Accept': 'application/json',
+      'User-Agent': UA,
+    },
+    dispatcher,
+    headersTimeout: 15000,
+    bodyTimeout: 15000,
+  });
+  return res.body.json();
+}
+
 export async function getCoins(ids: string, currency = 'usd'): Promise<CoinSimpleResponse | null> {
   try {
     const url = `${COINGECKO_API}/simple/price?ids=${ids}&vs_currencies=${currency}&include_market_cap=true&include_24hr_vol=true&include_24hr_change=true&include_last_updated_at=true`;
-    const res = await fetch(url, {
-      headers: {
-        Accept: 'application/json',
-      },
-    });
-    return await res.json();
-  } catch {
+    return await fetchJson(url);
+  } catch (e) {
+    console.error('[coin] getCoins error:', String(e));
     return null;
   }
 }
@@ -48,13 +69,9 @@ export async function getCoins(ids: string, currency = 'usd'): Promise<CoinSimpl
 export async function getCoinDetail(id: string): Promise<CoinDetailResponse | null> {
   try {
     const url = `${COINGECKO_API}/coins/${id}?localization=false&tickers=false&community_data=false&developer_data=false`;
-    const res = await fetch(url, {
-      headers: {
-        Accept: 'application/json',
-      },
-    });
-    return await res.json();
-  } catch {
+    return await fetchJson(url);
+  } catch (e) {
+    console.error('[coin] getCoinDetail error:', String(e));
     return null;
   }
 }

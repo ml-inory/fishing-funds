@@ -1,4 +1,5 @@
 const FUND_API = 'https://fundgz.1234567.com.cn/js';
+const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36';
 
 export interface FundResponse {
   fundcode: string;
@@ -24,7 +25,7 @@ export async function getFund(code: string): Promise<FundResponse | null> {
     const url = `${FUND_API}/${code}.js`;
     const res = await fetch(url, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        'User-Agent': UA,
         Referer: 'https://fund.eastmoney.com/',
       },
     });
