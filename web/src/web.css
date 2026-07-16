@@ -1,0 +1,22 @@
+/* Web-specific overrides for full-browser experience */
+
+:root {
+  --max-content-width: 1200px;
+}
+
+body {
+  min-height: 100vh;
+  background-color: var(--background-color);
+}
+
+/* Center content with max width for large screens */
+#root {
+  max-width: var(--max-content-width);
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+/* Larger padding for web */
+* {
+  --base-padding: 12px;
+}

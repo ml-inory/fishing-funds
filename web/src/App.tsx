@@ -13,6 +13,7 @@ import '@/styles/button.css';
 import '@/styles/color.css';
 import '@/styles/common.css';
 import '@/app.css';
+import './web.css';
 
 const HomePage = React.lazy(() => import('@/containers/HomePage'));
 const InitPage = React.lazy(() => import('@/containers/InitPage'));
