@@ -1,36 +1,23 @@
 #!/bin/bash
-# Fishing Funds Web App - Development Startup
-# Start both backend and frontend
+# Fishing Funds Web App - Start both backend and frontend
+set -e
+ROOT="$(cd "$(dirname "$0")" && pwd)"
+kill $(lsof -ti:3001) 2>/dev/null || true
+kill $(lsof -ti:3456) 2>/dev/null || true
 
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-
-# Kill any existing processes
-kill $(lsof -ti:3001) 2>/dev/null
-kill $(lsof -ti:3456) 2>/dev/null
-
-echo "=== Starting Fishing Funds Web ==="
-
-# Start backend
-echo "[1/2] Starting API server on :3001..."
-cd "$SCRIPT_DIR/server"
+echo "=== Fishing Funds Web ==="
+echo "[1/2] API server on :3001..."
+cd "$ROOT/server"
 https_proxy="${https_proxy:-http://192.168.31.189:7890}" npx tsx src/index.ts &
-BACKEND_PID=$!
-
-# Wait for backend
 sleep 2
 
-# Start frontend
-echo "[2/2] Starting Web dev server on :3456..."
-cd "$SCRIPT_DIR/web"
-npx vite --host &
-FRONTEND_PID=$!
+echo "[2/2] Web dev server on :3456..."
+cd "$ROOT/web"
+npx vite --host 0.0.0.0 &
+sleep 3
 
 echo ""
-echo "✅ Fishing Funds Web is running!"
-echo "   Frontend: http://localhost:3456"
-echo "   Backend:  http://localhost:3001"
-echo ""
-echo "Press Ctrl+C to stop both servers"
-
-trap "kill $BACKEND_PID $FRONTEND_PID 2>/dev/null; exit" INT TERM
+echo "✅ http://localhost:3456"
+echo "Press Ctrl+C to stop"
+trap "kill 0" INT TERM
 wait
