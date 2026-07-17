@@ -76,6 +76,7 @@ export const Coin = {
     return data ? { id: data.id, symbol: data.symbol, name: data.name, image: data.image, market_data: data.market_data, market_cap_rank: data.market_cap_rank, coingecko_score: data.coingecko_score } : null;
   },
   async GetRemoteCoinsFromCoingecko(): Promise<any> {
+  async GetKFromCoingecko(_code: string, _unit: string, _days: string): Promise<any> { return { prices: [] }; },
     if (coinListCache) return coinListCache;
     try {
       const data = await apiGet<any[]>('/coins/list/top');
