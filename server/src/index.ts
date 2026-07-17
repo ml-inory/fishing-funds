@@ -65,6 +65,12 @@ app.get('/api/coins/list/top', async (_req, res) => {
   data ? res.json(data) : res.status(502).json({ error: 'Failed to fetch coin list' });
 });
 
+// Stock search
+app.get("/api/stock/search/:keyword", async (req, res) => {
+  const data = await stockService.searchStocks(req.params.keyword);
+  res.json(data || []);
+});
+
 // Health check
 app.get('/api/health', (_req, res) => res.json({ status: 'ok', timestamp: Date.now() }));
 
