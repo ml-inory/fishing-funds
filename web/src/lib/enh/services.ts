@@ -1,4 +1,4 @@
-// Web service layer
+// Web service layer - calls Express backend API
 
 const API = '/api';
 
@@ -11,6 +11,9 @@ async function apiGet<T>(path: string): Promise<T> {
 function px(v: number): number { return v / 100; }
 function pct(v: number): number { return v / 100; }
 
+// Cache for fund list (large, avoid repeated fetches)
+let fundListCache: any[] | null = null;
+
 export const Fund = {
   async FromEastmoney(code: string): Promise<any> {
     const data = await apiGet(`/fund/${code}`);
@@ -19,7 +22,18 @@ export const Fund = {
   async GetFixFromEastMoney(code: string): Promise<any> { return Fund.FromEastmoney(code); },
   async GetFundInfoByNameFromEaseMoney(_n: string): Promise<any> { return null; },
   async GetRemoteFundsFromEastmoney(): Promise<any> {
-    try { return await apiGet('/funds/search') || []; } catch { return []; }
+    if (fundListCache) return fundListCache;
+    try {
+      const data = await apiGet<any[]>('/funds/search');
+      if (data && data.length > 0) {
+        fundListCache = data;
+        console.log(`[Fund] Loaded ${data.length} funds from API`);
+        return data;
+      }
+    } catch (e) {
+      console.warn('[Fund] Failed to load fund list:', e);
+    }
+    return [];
   },
   async GetFundRatingFromEasemoney(): Promise<any> { return []; },
   async FromTencent(code: string): Promise<any> { return Fund.FromEastmoney(code); },
@@ -42,6 +56,8 @@ export const Stock = {
   },
 };
 
+let coinListCache: any[] | null = null;
+
 export const Coin = {
   async FromCoingecko(ids: string, unit: string): Promise<any> {
     const data = await apiGet(`/coins/${ids}`);
@@ -60,7 +76,12 @@ export const Coin = {
     return data ? { id: data.id, symbol: data.symbol, name: data.name, image: data.image, market_data: data.market_data, market_cap_rank: data.market_cap_rank, coingecko_score: data.coingecko_score } : null;
   },
   async GetRemoteCoinsFromCoingecko(): Promise<any> {
-    try { return await apiGet('/coins/list/top') || []; } catch { return []; }
+    if (coinListCache) return coinListCache;
+    try {
+      const data = await apiGet<any[]>('/coins/list/top');
+      if (data && data.length > 0) { coinListCache = data; return data; }
+    } catch (e) { console.warn('[Coin] Failed to load coin list:', e); }
+    return [];
   },
 };
 
