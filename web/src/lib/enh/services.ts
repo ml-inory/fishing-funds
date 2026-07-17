@@ -46,8 +46,32 @@ export const Stock = {
     };
   },
   async SearchFromEastmoney(keyword: string): Promise<any> {
-    try { return await apiGet(`/stock/search/${encodeURIComponent(keyword)}`); } catch { return []; }
+    try {
+      const data = await apiGet(`/stock/search/${encodeURIComponent(keyword)}`);
+      // Transform API response: add Type field mapped from SecurityType (string → number)
+      return (data || []).map((item: any) => ({
+        ...item,
+        Type: parseInt(item.SecurityType) || 0,
+      }));
+    } catch { return []; }
   },
+  GetABCompany: async (_s: string) => null,
+  GetHKCompany: async (_s: string) => null,
+  GetUSCompany: async (_s: string) => null,
+  GetXSBCompany: async (_s: string) => null,
+  GetPicTrendFromEastmoney: async (_s: string) => null,
+  GetReportDate: async () => [],
+  GetStockHoldFunds: async (_s: string, _d: any) => [],
+  GetKFromEastmoney: async (_s: string, _k: any, _t: any) => ({ klines: [] }),
+  GetIndustryFromEastmoney: async (_s: string, _t?: number) => [],
+  GetTrendFromEastmoney: async (_s: string) => ({ trends: [] }),
+  GetDetailFromEastmoney: async (_s: string) => ({}),
+  GetCloseDayDates: async () => [],
+  GetMeetingData: async (_p: any) => [],
+  GetMainRankFromEastmoney: async (_d: any) => [],
+  GetNorthRankFromEastmoney: async (_d: any) => [],
+  GetSelfRankFromEastmoney: async (_d: any) => [],
+  GetStockRank: async (_c: string) => [],
 };
 
 let coinListCache: any[] | null = null;
@@ -75,9 +99,9 @@ export const Coin = {
     try { const data = await apiGet<any[]>('/coins/list/top'); if (data?.length) { coinListCache = data; return data; } } catch {}
     return [];
   },
-  async GetKFromCoingecko(_code: string, _unit: string, _days: string): Promise<any> { return { prices: [] }; },
-  async GetHistoryFromCoingecko(_code: string, _unit: string, _days: string): Promise<any> { return { prices: [] }; },
-  async FromCoinCap(_sort: string, _dir: string): Promise<any> { return []; },
+  GetKFromCoingecko: async (_code: string, _unit: string, _days: string) => ({ prices: [] }),
+  GetHistoryFromCoingecko: async (_code: string, _unit: string, _days: string) => ({ prices: [] }),
+  FromCoinCap: async (_sort: string, _dir: string) => [],
 };
 
 export const Zindex = {
@@ -89,31 +113,10 @@ export const Zindex = {
 };
 
 export const Quotation = {
-  async GetQuotationsFromEastmoney(_t: string, _p?: number): Promise<any> { return []; },
+  GetQuotationsFromEastmoney: async (_t: string, _p?: number) => [],
 };
 
 export const Time = {
-  async GetCurrentDateTimeFromTaobao(): Promise<any> { return { data: { t: Date.now() } }; },
-  async GetCurrentDateTimeFromSuning(): Promise<any> { return { data: { t: Date.now() } }; },
+  GetCurrentDateTimeFromTaobao: async () => ({ data: { t: Date.now() } }),
+  GetCurrentDateTimeFromSuning: async () => ({ data: { t: Date.now() } }),
 };
-// Stock missing stubs
-const _stockStubs = {
-  GetABCompany: async (_s: string) => null,
-  GetHKCompany: async (_s: string) => null,
-  GetUSCompany: async (_s: string) => null,
-  GetXSBCompany: async (_s: string) => null,
-  GetPicTrendFromEastmoney: async (_s: string) => null,
-  GetReportDate: async () => [],
-  GetStockHoldFunds: async (_s: string, _d: any) => [],
-  GetKFromEastmoney: async (_s: string, _k: any, _t: any) => ({ klines: [] }),
-  GetIndustryFromEastmoney: async (_s: string, _t?: number) => [],
-  GetTrendFromEastmoney: async (_s: string) => ({ trends: [] }),
-  GetDetailFromEastmoney: async (_s: string) => ({}),
-  GetCloseDayDates: async () => [],
-  GetMeetingData: async (_p: any) => [],
-  GetMainRankFromEastmoney: async (_d: any) => [],
-  GetNorthRankFromEastmoney: async (_d: any) => [],
-  GetSelfRankFromEastmoney: async (_d: any) => [],
-  GetStockRank: async (_c: string) => [],
-};
-Object.assign(Stock, _stockStubs);
