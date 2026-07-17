@@ -51,3 +51,14 @@ export async function getStocks(secids: string[]): Promise<(StockResponse | null
 
 export const getZindex = getStock;
 export const getZindexs = getStocks;
+
+// Search stocks from Eastmoney
+export async function searchStocks(keyword: string): Promise<any[]> {
+  try {
+    const url = `https://searchapi.eastmoney.com/api/suggest/get?input=${encodeURIComponent(keyword)}&type=14&token=D43BF722C8E33BDC906FB84D85E326E8&count=20`;
+    const json = await fetchJson(url);
+    return json?.QuotationCodeTable?.Data || [];
+  } catch {
+    return [];
+  }
+}

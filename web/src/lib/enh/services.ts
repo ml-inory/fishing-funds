@@ -33,6 +33,7 @@ export const Fund = {
 
 export const Stock = {
   async FromEastmoney(secid: string): Promise<any> {
+  async SearchFromEastmoney(keyword: string): Promise<any> { try { return await apiGet(`/stock/search/${encodeURIComponent(keyword)}`); } catch { return []; } },
     const data = await apiGet(`/stock/${secid}`);
     if (!data) return null;
     return {
