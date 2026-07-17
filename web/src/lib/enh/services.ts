@@ -96,3 +96,24 @@ export const Time = {
   async GetCurrentDateTimeFromTaobao(): Promise<any> { return { data: { t: Date.now() } }; },
   async GetCurrentDateTimeFromSuning(): Promise<any> { return { data: { t: Date.now() } }; },
 };
+// Stock missing stubs
+const _stockStubs = {
+  GetABCompany: async (_s: string) => null,
+  GetHKCompany: async (_s: string) => null,
+  GetUSCompany: async (_s: string) => null,
+  GetXSBCompany: async (_s: string) => null,
+  GetPicTrendFromEastmoney: async (_s: string) => null,
+  GetReportDate: async () => [],
+  GetStockHoldFunds: async (_s: string, _d: any) => [],
+  GetKFromEastmoney: async (_s: string, _k: any, _t: any) => ({ klines: [] }),
+  GetIndustryFromEastmoney: async (_s: string, _t?: number) => [],
+  GetTrendFromEastmoney: async (_s: string) => ({ trends: [] }),
+  GetDetailFromEastmoney: async (_s: string) => ({}),
+  GetCloseDayDates: async () => [],
+  GetMeetingData: async (_p: any) => [],
+  GetMainRankFromEastmoney: async (_d: any) => [],
+  GetNorthRankFromEastmoney: async (_d: any) => [],
+  GetSelfRankFromEastmoney: async (_d: any) => [],
+  GetStockRank: async (_c: string) => [],
+};
+Object.assign(Stock, _stockStubs);
