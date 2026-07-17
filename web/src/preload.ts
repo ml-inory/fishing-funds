@@ -2,7 +2,7 @@
 
 const STORAGE_PREFIX = 'ff_web_';
 const SEED_VERSION_KEY = `${STORAGE_PREFIX}seed_version`;
-const CURRENT_SEED_VERSION = 2;
+const CURRENT_SEED_VERSION = 3;
 
 async function request(url: string, config: any = {}) {
   const { responseType = 'json', headers: reqHeaders, searchParams, method = 'GET', body: reqBody } = config;
@@ -21,6 +21,13 @@ async function request(url: string, config: any = {}) {
 
 function seedSampleData() {
   const seedVersion = Number(localStorage.getItem(SEED_VERSION_KEY) || 0);
+  // Clear ALL old data on major version bump
+  if (seedVersion > 0 && seedVersion < 3) {
+    for (let i = localStorage.length - 1; i >= 0; i--) {
+      const k = localStorage.key(i);
+      if (k?.startsWith(STORAGE_PREFIX)) localStorage.removeItem(k);
+    }
+  }
   if (seedVersion >= CURRENT_SEED_VERSION) return;
 
   localStorage.setItem(`${STORAGE_PREFIX}config_WALLET_SETTING`, JSON.stringify([{
