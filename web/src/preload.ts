@@ -60,6 +60,7 @@ function seedSampleData() {
   localStorage.setItem(SEED_VERSION_KEY, String(CURRENT_SEED_VERSION));
 }
 seedSampleData();
+console.log("[FF] Seed v" + CURRENT_SEED_VERSION + " executed, seedVersion was: " + (Number(localStorage.getItem(SEED_VERSION_KEY) || 0) - 1 || 0) + ". Wallet data: " + (localStorage.getItem(STORAGE_PREFIX + "config_WALLET_SETTING") ? "YES" : "NO"));
 
 const electronStore = {
   async get(type: string, key: string, init: unknown) {
