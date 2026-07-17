@@ -16,7 +16,8 @@ let fundListCache: any[] | null = null;
 export const Fund = {
   async FromEastmoney(code: string): Promise<any> {
     const data = await apiGet(`/fund/${code}`);
-    return data ? { fundcode: data.fundcode, name: data.name, jzrq: data.jzrq, dwjz: data.dwjz, gsz: data.gsz, gszzl: data.gszzl, gztime: data.gztime } : null;
+    if (!data) return null;
+    return { fundcode: data.fundcode, name: data.name, jzrq: data.jzrq, dwjz: data.dwjz, gsz: data.gsz, gszzl: data.gszzl, gztime: data.gztime };
   },
   async GetFixFromEastMoney(code: string): Promise<any> { return Fund.FromEastmoney(code); },
   async GetFundInfoByNameFromEaseMoney(_n: string): Promise<any> { return null; },
@@ -33,7 +34,6 @@ export const Fund = {
 
 export const Stock = {
   async FromEastmoney(secid: string): Promise<any> {
-  async SearchFromEastmoney(keyword: string): Promise<any> { try { return await apiGet(`/stock/search/${encodeURIComponent(keyword)}`); } catch { return []; } },
     const data = await apiGet(`/stock/${secid}`);
     if (!data) return null;
     return {
@@ -44,6 +44,9 @@ export const Stock = {
       zsz: data.f116, ltsz: data.f117, syl: data.f162, sjl: data.f167,
       time: new Date().toLocaleTimeString(),
     };
+  },
+  async SearchFromEastmoney(keyword: string): Promise<any> {
+    try { return await apiGet(`/stock/search/${encodeURIComponent(keyword)}`); } catch { return []; }
   },
 };
 
@@ -64,7 +67,8 @@ export const Coin = {
   },
   async GetDetailFromCoingecko(code: string): Promise<any> {
     const data = await apiGet(`/coin/detail/${code}`);
-    return data ? { id: data.id, symbol: data.symbol, name: data.name, image: data.image, market_data: data.market_data, market_cap_rank: data.market_cap_rank, coingecko_score: data.coingecko_score } : null;
+    if (!data) return null;
+    return { id: data.id, symbol: data.symbol, name: data.name, image: data.image, market_data: data.market_data, market_cap_rank: data.market_cap_rank, coingecko_score: data.coingecko_score };
   },
   async GetRemoteCoinsFromCoingecko(): Promise<any> {
     if (coinListCache) return coinListCache;
