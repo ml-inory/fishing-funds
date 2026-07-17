@@ -11,7 +11,6 @@ async function apiGet<T>(path: string): Promise<T> {
 function px(v: number): number { return v / 100; }
 function pct(v: number): number { return v / 100; }
 
-// Cache for fund list (large, avoid repeated fetches)
 let fundListCache: any[] | null = null;
 
 export const Fund = {
@@ -23,16 +22,7 @@ export const Fund = {
   async GetFundInfoByNameFromEaseMoney(_n: string): Promise<any> { return null; },
   async GetRemoteFundsFromEastmoney(): Promise<any> {
     if (fundListCache) return fundListCache;
-    try {
-      const data = await apiGet<any[]>('/funds/search');
-      if (data && data.length > 0) {
-        fundListCache = data;
-        console.log(`[Fund] Loaded ${data.length} funds from API`);
-        return data;
-      }
-    } catch (e) {
-      console.warn('[Fund] Failed to load fund list:', e);
-    }
+    try { const data = await apiGet<any[]>('/funds/search'); if (data?.length) { fundListCache = data; return data; } } catch {}
     return [];
   },
   async GetFundRatingFromEasemoney(): Promise<any> { return []; },
@@ -76,14 +66,13 @@ export const Coin = {
     return data ? { id: data.id, symbol: data.symbol, name: data.name, image: data.image, market_data: data.market_data, market_cap_rank: data.market_cap_rank, coingecko_score: data.coingecko_score } : null;
   },
   async GetRemoteCoinsFromCoingecko(): Promise<any> {
-  async GetKFromCoingecko(_code: string, _unit: string, _days: string): Promise<any> { return { prices: [] }; },
     if (coinListCache) return coinListCache;
-    try {
-      const data = await apiGet<any[]>('/coins/list/top');
-      if (data && data.length > 0) { coinListCache = data; return data; }
-    } catch (e) { console.warn('[Coin] Failed to load coin list:', e); }
+    try { const data = await apiGet<any[]>('/coins/list/top'); if (data?.length) { coinListCache = data; return data; } } catch {}
     return [];
   },
+  async GetKFromCoingecko(_code: string, _unit: string, _days: string): Promise<any> { return { prices: [] }; },
+  async GetHistoryFromCoingecko(_code: string, _unit: string, _days: string): Promise<any> { return { prices: [] }; },
+  async FromCoinCap(_sort: string, _dir: string): Promise<any> { return []; },
 };
 
 export const Zindex = {
